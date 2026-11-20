@@ -1,24 +1,32 @@
 #!/usr/bin/env python3
-"""Entry program for make.fun's news-image-20261120 bounty.
+"""Copy the finished front page to the grading output directory.
 
-Copies the front page this repository holds (entry.png, drawn by
-draw_poster.py) to the output directory. Standard library only, no
-network, deterministic: every run writes the same bytes.
+Standard library only: the grading sandbox installs nothing, so this
+program just copies entry.png (which draw_poster.py renders) to
+$MAKEFUN_OUTPUT_DIR/entry.png, defaulting to ./out/entry.png.
 """
 import os
 import shutil
+import sys
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
+
+def output_path():
+    folder = os.environ.get("MAKEFUN_OUTPUT_DIR") or "out"
+    return os.path.join(folder, "entry.png")
 
 
 def main():
-    os.makedirs(OUT, exist_ok=True)
-    src = os.path.join(HERE, "entry.png")
-    dst = os.path.join(OUT, "entry.png")
-    shutil.copyfile(src, dst)
-    print(dst, os.path.getsize(dst), "bytes")
+    here = os.path.dirname(os.path.abspath(__file__))
+    source = os.path.join(here, "entry.png")
+    if not os.path.isfile(source):
+        print("entry.png is missing; run draw_poster.py first", file=sys.stderr)
+        return 1
+    target = output_path()
+    os.makedirs(os.path.dirname(target) or ".", exist_ok=True)
+    shutil.copyfile(source, target)
+    print("wrote " + target)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
